@@ -1,0 +1,84 @@
+{
+    "model_config_list": [
+        {
+            "config": {
+                "name": "single-image-super-resolution",
+                "base_path": "/models/super_resolution_model_preprocessed/",
+		"nireq": 1,
+		"plugin_config": {
+                   "NUM_STREAMS" : "1",
+                   "AFFINITY": "CORE"
+		}
+            }
+        }
+    ],
+    "custom_node_library_config_list": [
+        {"name": "sr_preprocess",
+            "base_path": "/models/libcustom_node_super_resolution_nhwc.so"}
+    ],
+    "pipeline_config_list": [
+        {
+            "name": "super_resolution",
+            "inputs": ["data"],
+	    "demultiply_count": -1,
+            "nodes": [
+                {
+                    "name": "sr_preprocess_node",
+                    "library_name": "sr_preprocess",
+                    "type": "custom",
+                    "params": {
+			"image_preprocess_method": "SimpleResize",
+			"background_image_path": "/models/background.jpeg",
+			"debug": "false",
+                        "target_image_height": "1080",
+			"target_image_width": "1920",
+                        "original_image_color_order": "RGB",
+                        "target_image_color_order": "RGB",
+
+                        "original_image_layout": "NHWC",
+                        "target_image_layout": "NHWC"
+                    },
+
+                    "inputs": [
+                        {"image": {
+                                "node_name": "request",
+                                "data_item": "data"}}],
+                    "outputs": [
+                        {"data_item": "out1",
+                            "alias": "output1"},
+			{"data_item": "out2",
+			    "alias": "output2"}]
+                },
+                {
+                    "name": "super_resolution_node",
+                    "model_name": "single-image-super-resolution",
+                    "type": "DL model",
+                    "inputs": [
+			{"0":
+			    {
+			     "node_name": "sr_preprocess_node",
+			     "data_item": "output1"
+			    }
+			},
+                        {"1": 
+                            {
+                             "node_name": "sr_preprocess_node",
+                             "data_item": "output2"
+                            }
+                        }
+                    ],
+                    "outputs": [
+                        {"data_item": "129",
+                         "alias": "super_resolution_output"}
+                    ]
+                }
+            ],
+            "outputs": [
+                {"129": {
+                        "node_name": "super_resolution_node",
+                        "data_item": "super_resolution_output"}
+		}
+            ]
+        }
+    ]
+}

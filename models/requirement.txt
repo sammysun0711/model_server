@@ -1,0 +1,4 @@
+numpy
+tensorflow-serving-api==2.11.0
+pyvips==2.2.1
+openvino==2022.3

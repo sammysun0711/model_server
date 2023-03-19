@@ -17,6 +17,7 @@
 FROM ubuntu:20.04
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y build-essential curl
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y libvips libvips-dev libvips-tools pkg-config libjpeg-dev
 
 # OpenCV
 WORKDIR /opt
@@ -34,9 +35,9 @@ COPY ./common /custom_nodes/common
 COPY ./${NODE_NAME} /custom_nodes/${NODE_NAME}/
 COPY custom_node_interface.h /
 WORKDIR /custom_nodes/common
-RUN g++ -c -std=c++17 *.cpp ${OPS} -I/opt/opencv/include/opencv4
+RUN g++ -c -std=c++17 *.cpp ${OPS} -I/opt/opencv/include/opencv4 `pkg-config vips-cpp --cflags --libs`
 WORKDIR /custom_nodes/${NODE_NAME}/
 RUN mkdir -p /custom_nodes/lib
-RUN g++ -c -std=c++17 ${NODE_NAME}.${NODE_TYPE} ${OPS} -I/opt/opencv/include/opencv4
+RUN g++ -c -std=c++17 ${NODE_NAME}.${NODE_TYPE} ${OPS} -I/opt/opencv/include/opencv4 `pkg-config vips-cpp --cflags --libs`
 RUN g++ -shared ${OPS} -o /custom_nodes/lib/libcustom_node_${NODE_NAME}.so ${NODE_NAME}.o /custom_nodes/common/*.o \
-    -L/opt/opencv/lib/ -I/opt/opencv/include/opencv4 -lopencv_core -lopencv_imgproc -lopencv_imgcodecs
+    -L/opt/opencv/lib/ -I/opt/opencv/include/opencv4 -lopencv_core -lopencv_imgproc -lopencv_imgcodecs `pkg-config vips-cpp --cflags --libs`
