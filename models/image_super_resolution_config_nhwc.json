@@ -7,6 +7,7 @@
 		"nireq": 1,
 		"plugin_config": {
                    "NUM_STREAMS" : "1",
+		   "INFERENCE_PRECISION_HINT": "bf16",
                    "AFFINITY": "CORE"
 		}
             }
